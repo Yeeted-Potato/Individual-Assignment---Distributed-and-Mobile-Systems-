@@ -1,7 +1,12 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 
+class CustomerCreate(BaseModel):
+    name: str
+    email: str
+    
 @app.get("/")
 def root():
     return {"message": "Hello, World!"}
@@ -13,3 +18,9 @@ def health():
 @app.get("/customers/{customer_id}")
 def get_customer(customer_id: int):
     return {"You asked for customer": customer_id}
+
+@app.post("/customers")
+def create_customer(customer: CustomerCreate):
+    return {"Recieved": customer.name, "email": customer.email}
+
+    
