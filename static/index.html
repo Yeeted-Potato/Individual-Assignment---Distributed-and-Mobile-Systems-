@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Customer Orders</title>
+</head>
+<body>
+    <!-- button that triggers loading customers function-->
+    <h1>Customers</h1>
+    <button onclick="loadCustomers()">Load customers</button>
+    <pre id="output">Click the button to load</pre>
+
+    <!-- form to create new customer -->
+    <h2>Add a customer</h2>
+    <input id = "name" placeholder="Name">
+    <input id = "email" placeholder="Email">
+    <button onclick="createCustomer()">Create customer</button>
+
+    <!-- javascript send get request to /customers and take response and parse it into javascript object-->
+    <script>
+        async function loadCustomers() {
+            const response = await fetch("/customers");
+            const data = await response.json();
+            document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function createCustomer() {
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+
+            const response = await fetch("/customers", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({name: name, email: email})
+            });
+
+            const data = await response.json();
+            document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+        }
+    </script>
+</body>
+</html>
