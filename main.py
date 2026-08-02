@@ -6,6 +6,13 @@ import models
 
 app = FastAPI()
 
+ALLOWED_TRANSITIONS = {
+    "pending": ["paid"],
+    "paid": ["shipped"],
+    "shipped": ["delivered"],
+    "delivered": [],
+}
+
 #create each table in the database
 Base.metadata.create_all(bind=engine)
 
@@ -16,6 +23,9 @@ class CustomerCreate(BaseModel):
 class OrderCreate(BaseModel):
     product: str
     quantity: int
+
+class OrderStatusUpdate(BaseModel):
+    status: str
 
 @app.get("/")
 def root():
@@ -75,3 +85,23 @@ def list_orders(customer_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Customer not found")
     
     return db.query(models.Order).filter(models.Order.customer_id == customer_id).all()
+
+#update order status, match order id and check if the new status is allowed
+@app.patch("/orders/{order_id}")
+def update_order_status(order_id: int, update: OrderStatusUpdate, db: Session = Depends(get_db)):
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    current_status = order.status
+    new_status = update.status
+    
+    if new_status not in ALLOWED_TRANSITIONS[current_status]:
+        raise HTTPException(status_code=400, 
+                            detail=f"Invalid status transition from {current_status} to {new_status}"
+                            )
+    
+    order.status = new_status
+    db.commit()
+    db.refresh(order)
+    return order
