@@ -13,6 +13,10 @@ class CustomerCreate(BaseModel):
     name: str
     email: str
     
+class OrderCreate(BaseModel):
+    product: str
+    quantity: int
+
 @app.get("/")
 def root():
     return {"message": "Hello, World!"}
@@ -45,4 +49,21 @@ def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
     db.refresh(new_customer)
     return new_customer
 
+#create a path for customers to create an order, match customer id and have columns of info for database
+@app.post("/customers/{customer_id}/orders")
+def create_order(customer_id: int, order: OrderCreate, db: Session = Depends(get_db)):
+    customer = db.query(models.Customer).filter(models.Customer.id == customer_id).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    new_order = models.Order(
+        customer_id=customer_id,
+        product=order.product,
+        quantity=order.quantity,
+    )
+    
+    db.add(new_order)
+    db.commit()
+    db.refresh(new_order)
+    return new_order
     
