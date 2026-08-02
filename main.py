@@ -67,3 +67,11 @@ def create_order(customer_id: int, order: OrderCreate, db: Session = Depends(get
     db.refresh(new_order)
     return new_order
     
+#create a path to list orders for a specific customer, match customer id and return all their orders
+@app.get("/customers/{customer_id}/orders")
+def list_orders(customer_id: int, db: Session = Depends(get_db)):
+    customer = db.query(models.Customer).filter(models.Customer.id == customer_id).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    return db.query(models.Order).filter(models.Order.customer_id == customer_id).all()
