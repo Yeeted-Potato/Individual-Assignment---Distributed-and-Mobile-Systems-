@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from database import Base, engine, get_db
 from sqlalchemy.orm import Session
@@ -27,9 +28,9 @@ class OrderCreate(BaseModel):
 class OrderStatusUpdate(BaseModel):
     status: str
 
-@app.get("/")
-def root():
-    return {"message": "Hello, World!"}
+#@app.get("/")
+#def root():
+#    return {"message": "Hello, World!"}
 
 @app.get("/health")
 def health():
@@ -105,3 +106,6 @@ def update_order_status(order_id: int, update: OrderStatusUpdate, db: Session = 
     db.commit()
     db.refresh(order)
     return order
+
+#serve files from the static folder
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
