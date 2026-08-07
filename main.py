@@ -7,6 +7,7 @@ import models
 
 app = FastAPI()
 
+#order status transitions allowed in the system
 ALLOWED_TRANSITIONS = {
     "pending": ["paid"],
     "paid": ["shipped"],
@@ -17,6 +18,7 @@ ALLOWED_TRANSITIONS = {
 #create each table in the database
 Base.metadata.create_all(bind=engine)
 
+#define the shape of the data for customers and orders using Pydantic models
 class CustomerCreate(BaseModel):
     name: str
     email: str
@@ -40,6 +42,7 @@ def health():
 #def get_customer(customer_id: int):
 #    return {"You asked for customer": customer_id}
 
+#create a path to get a specific customer by id, find that customer in the database and return their info
 @app.get("/customers/{customer_id}")
 def get_customer(customer_id: int, db: Session = Depends(get_db)):
     customer = db.query(models.Customer).filter(models.Customer.id == customer_id).first()
@@ -52,6 +55,7 @@ def get_customer(customer_id: int, db: Session = Depends(get_db)):
 def list_customers(db: Session = Depends(get_db)):
     return db.query(models.Customer).all()
 
+#create a path for customers to create a new customer, with columns of info for the database
 @app.post("/customers")
 def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
     new_customer = models.Customer(name=customer.name, email=customer.email)
