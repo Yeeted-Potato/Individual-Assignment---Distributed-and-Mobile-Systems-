@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from database import Base, engine, get_db
 from sqlalchemy.orm import Session
 import models
@@ -20,8 +20,8 @@ Base.metadata.create_all(bind=engine)
 
 #define the shape of the data for customers and orders using Pydantic models
 class CustomerCreate(BaseModel):
-    name: str
-    email: str
+    name: str = Field(min_length=1)
+    email: str = Field(min_length=1)
     
 class OrderCreate(BaseModel):
     product: str
@@ -58,6 +58,9 @@ def list_customers(db: Session = Depends(get_db)):
 #create a path for customers to create a new customer, with columns of info for the database
 @app.post("/customers")
 def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
+    existing = db.query(models.Customer).filter(models.Customer.email == customer.email).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
     new_customer = models.Customer(name=customer.name, email=customer.email)
     db.add(new_customer)
     db.commit()
