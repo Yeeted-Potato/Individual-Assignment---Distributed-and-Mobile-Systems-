@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Orders - Update Status</title>
+    <style>
+        /* style links to look like buttons */
+        .nav-button {
+            display: inline-block;
+            padding: 12px 20px;
+            margin: 5px;
+            background-color: blue;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-family: sans-serif;
+        }
+        .nav-button:hover {
+            background-color: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <h1>Customer Orders System</h1>
+
+    <!-- navigation links styled as buttons, in a row -->
+    <div>
+        <a href="create-customer.html" class="nav-button">Create Customer</a>
+        <a href="load-customers.html" class="nav-button">View Customers</a>
+        <a href="create-order.html" class="nav-button">Create Order</a>
+        <a href="view-orders.html" class="nav-button">View Orders</a>
+        <a href="update-status.html" class="nav-button">Update Status</a>
+    </div>
+
+    <h2>Update an order's status</h2>
+    <h4>Order Statuses</h4>
+    <li>Pending > Paid > Shipped >Delivered</li>
+    <li></li>
+    
+    <input id="orderId" placeholder="Order ID">
+    <input id="newStatus" placeholder="New status">
+    <button onclick="updateStatus()">Update status</button>
+    <pre id="output"></pre>
+
+    <script>
+        async function updateStatus() {
+            const orderId = document.getElementById("orderId").value;
+            const newStatus = document.getElementById("newStatus").value;
+
+            const response = await fetch("/orders/" + orderId, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                document.getElementById("output").textContent =
+                    "Order " + data.id + " updated to: " + data.status;
+            } else {
+                document.getElementById("output").textContent =
+                    "Error: " + JSON.stringify(data.detail);
+            }
+}
+    </script>
+</body>
+</html>
